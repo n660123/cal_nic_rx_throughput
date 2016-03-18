@@ -1,25 +1,21 @@
 #!/bin/bash
+ 
+INTERVAL="1"  # update interval in seconds
+ 
+while true
+do
+        R1=`cat /sys/class/net/wlan0/statistics/rx_bytes`
+        T1=`cat /sys/class/net/wlan0/statistics/tx_bytes`
+        sleep $INTERVAL
 
-while [ 1 ]
-do	
-	NIC=wlan0
+        R2=`cat /sys/class/net/wlan0/statistics/rx_bytes`
+        T2=`cat /sys/class/net/wlan0/statistics/tx_bytes`
 
-	rx_old=$(cat /proc/net/dev | grep $NIC | cut -d ':' -f 2 | awk '{print $1}')
-	RXSTARTtime=`date +%s`
-	echo "rx_old=$rx_old"
-	#echo "RXSTARTtime=$RXSTARTtime"
-	sleep 1
+        Tx_diff=`expr $T2 - $T1`
+        Rx_diff=`expr $R2 - $R1`
 
-	rx=$(cat /proc/net/dev | grep $NIC | cut -d ':' -f 2 | awk '{print $1}')
-	RXENDtime=`date +%s`
-	echo "rx=$rx"
-	#echo "RXENDtime=$RXENDtime"
-
-	rx_diff=$(($rx-$rx_old))
-	#X_diff=`echo "scale=9; ((((($tx-$tx_old)/1024)/1024)*8)/($TXENDtime-$TXSTARTtime))" | bc -l`
-	echo "$rx_diff"
-
-	#sleep 1
+		Tx=$(echo "$Tx_diff/1024/1024*8" | bc -l | awk '{printf("%.3f",$Tx_diff)}')
+		Rx=$(echo "$Rx_diff/1024/1024*8" | bc -l | awk '{printf("%.3f",$Rx_diff)}')
+	
+        echo "wlan0 TX: $Tx Mbps, RX: $Rx Mbps"
 done
-
-
